@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  grafana:
+    image: grafana/grafana:8.0.0
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./config/grafana.ini:/etc/grafana/grafana.ini:ro
+      - ./config/grafana.db:/custom-grafana-db/grafana.db:ro
+      - ./entrypoint.sh:/entrypoint.sh  # Mount entrypoint.sh into the container
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]  # Use the custom entrypoint
+    restart: always
+    networks:
+      - external_net
+      - internal_net
+
+  secret-api:
+    image: python:3.9
+    container_name: secret-api
+    working_dir: /app
+    volumes:
+      - ./api:/app
+    command: ["python", "server.py"]
+    expose:
+      - "5000"
+    environment:
+      - SECRET_FLAG=sillyCTF{I_c@nt_St0p_Gr@f@n@!ng!!!!!_Im_Grafanaing_!t!}
+    networks:
+      - internal_net
+    restart: always
+
+networks:
+  external_net:
+  internal_net:
+    internal: true
